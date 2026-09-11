@@ -3,157 +3,189 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Assembly Line Capacity Calculator</title>
+<title>Assembly Time Study & Capacity Calculator</title>
+<!-- Pustaka untuk ubah HTML jadi Gambar HD -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root { --navy: #1e3a8a; --emerald: #10b981; --white: #ffffff; --bg: #f8fafc; --text: #0f172a; --gray: #64748b; --border: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); }
+[data-theme="dark"] { --navy: #60a5fa; --emerald: #34d399; --white: #1e293b; --bg: #0f172a; --text: #f8fafc; --gray: #94a3b8; --border: #334155; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+
 *{box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);padding-bottom:40px;animation:fadeIn 0.5s ease-in-out}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.wrap{max-width:1200px;margin:auto;padding:16px}
-h1{margin:0 0 4px;color:var(--navy);font-size:24px;display:flex;align-items:center;gap:8px}
-.sub{color:var(--gray);margin-bottom:20px;font-size:13px}
-.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);transition:all 0.3s ease}
-.card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,0.05)}
-.card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--bg);padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.card-header h2{margin:0;font-size:16px;color:var(--navy);display:flex;align-items:center;gap:8px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-label{display:block;font-size:11px;font-weight:700;margin-bottom:6px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px}
-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:15px;background:var(--white);transition:all 0.2s}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);padding-bottom:40px;transition:background 0.3s, color 0.3s}
+.wrap{max-width:1200px;margin:auto;padding:14px}
+.header-flex{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+h1{margin:0 0 4px;color:var(--navy);font-size:20px;display:flex;align-items:center;gap:8px}
+.sub{color:var(--gray);font-size:12px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);transition:background 0.3s, border 0.3s}
+.card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--bg);padding-bottom:10px;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.card-header h2{margin:0;font-size:15px;color:var(--navy);display:flex;align-items:center;gap:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+label{display:block;font-size:11px;font-weight:700;margin-bottom:4px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px}
+input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--white);color:var(--text);transition:all 0.2s}
 input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(30,58,138,0.1)}
-button{padding:10px 16px;border:0;border-radius:10px;background:var(--navy);color:var(--white);font-weight:700;cursor:pointer;transition:all 0.2s;font-size:13px;display:inline-flex;align-items:center;gap:6px}
-button:hover{background:#1d4ed8;transform:translateY(-1px)}
-button:active{transform:translateY(0)}
-button.alt{background:#f1f5f9;color:var(--text)}button.alt:hover{background:#e2e8f0}
-button.success{background:var(--emerald)}button.success:hover{background:#059669}
-button.warning{background:#f59e0b;color:white}button.warning:hover{background:#d97706}
-button.danger{background:#ef4444;color:white;padding:8px 12px;margin-top:0;font-size:12px}
-button.danger:hover{background:#dc2626}
+button{padding:9px 14px;border:0;border-radius:10px;background:var(--navy);color:var(--white);font-weight:700;cursor:pointer;transition:all 0.2s;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+button:hover{opacity:0.9}
+button.alt{background:var(--border);color:var(--text)}
+button.success{background:var(--emerald);color:white}
+button.warning{background:#f59e0b;color:white}
+button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-size:12px}
 
-/* MOBILE FRIENDLY PROCESS CARDS (No Horizontal Scroll) */
-.process-list{display:flex;flex-direction:column;gap:12px}
-.process-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;transition:all 0.2s}
-.process-card:hover{border-color:#cbd5e1}
-.process-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
-.process-card-top input{font-weight:700;font-size:15px;color:var(--navy);background:var(--white)}
-.process-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
-.process-grid-bottom{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:12px;color:var(--gray)}
-.process-grid-bottom div span{font-weight:700;color:var(--text);display:block;font-size:13px;margin-top:2px}
+/* PROCESS CARDS */
+.process-list{display:flex;flex-direction:column;gap:10px}
+.process-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px}
+.process-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+.process-card-top input{font-weight:700;font-size:14px;color:var(--navy)}
+.process-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.process-grid-bottom{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-top:6px;border-top:1px dashed var(--border);font-size:11px;color:var(--gray)}
+.process-grid-bottom div span{font-weight:700;color:var(--text);display:block;font-size:12px;margin-top:2px}
 
-.results{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.metric{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+/* SIMULATION CARDS */
+.sim-list{display:flex;flex-direction:column;gap:10px}
+.sim-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px}
+.sim-card-title{font-weight:700;font-size:14px;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sim-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:12px;color:var(--gray)}
+.sim-grid div{background:var(--white);padding:8px;border-radius:8px;border:1px solid var(--border)}
+.sim-grid div span{font-weight:700;color:var(--text);display:block;font-size:13px;margin-top:2px}
+
+/* EVALUATION METRICS */
+.results{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.metric{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
 .lab{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
-.val{font-size:20px;font-weight:800;margin-top:4px;color:var(--text)}
-.status{padding:14px;border-radius:12px;background:var(--bg);font-weight:700;margin-top:14px;font-size:13px;display:flex;align-items:center;gap:10px;animation:pulseStatus 2s infinite}
-@keyframes pulseStatus{0%{opacity:1}50%{opacity:0.85}100%{opacity:1}}
-.status.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
-.status.warn{background:#fef2f2;color:#991b1b;border:1px solid #f87171}
-.bottleneck{color:#b91c1c}
-.note{font-size:12px;color:var(--gray);margin-top:12px}
+.val{font-size:18px;font-weight:800;margin-top:4px;color:var(--text)}
+.status{padding:12px;border-radius:12px;background:var(--bg);font-weight:700;margin-top:12px;font-size:12px;display:flex;align-items:center;gap:8px}
+.status.ok{background:#065f46;color:#ecfdf5;border:1px solid #10b981}
+.status.warn{background:#7f1d1d;color:#fee2e2;border:1px solid #f87171}
+.bottleneck{color:#f87171}
+.note{font-size:11px;color:var(--gray);margin-top:10px}
 
-/* Simulasi Table Mobile Friendly */
-.table-responsive{width:100%;overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px;min-width:550px}
-th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:right;vertical-align:middle}
-th{background:var(--bg);color:var(--gray);font-weight:700;text-transform:uppercase;font-size:11px}
-th:first-child,td:first-child{text-align:left}
+/* STOPWATCH STYLE */
+.sw-container{text-align:center;padding:2px}
+.sw-display{font-size:36px;font-weight:800;color:var(--navy);font-family:monospace;margin:6px 0;letter-spacing:1px}
+.sw-controls{display:flex;justify-content:center;gap:8px;margin-bottom:10px;align-items:center}
+.laps-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-top:8px}
+.lap-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;font-size:12px}
 
-/* Stopwatch style */
-.sw-container{text-align:center;padding:5px}
-.sw-display{font-size:40px;font-weight:800;color:var(--navy);font-family:monospace;margin:8px 0;letter-spacing:1px}
-.sw-controls{display:flex;justify-content:center;gap:8px;margin-bottom:12px}
-.laps-container{max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:8px}
+/* AREA CAPTURE OPTIMAL (Lebar proporsional pas layar) */
+#captureArea { 
+  background: var(--bg); 
+  padding: 16px; 
+  border-radius: 16px; 
+  width: 100%;
+  max-width: 600px; /* Lebar kompak agar tidak terlalu panjang ke bawah */
+  margin: 0 auto;
+}
 
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.results{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.results{grid-template-columns:1fr}.process-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
-<body>
+<body data-theme="light">
 <div class="wrap">
-<h1>⚡ Assembly Line Capacity Calculator</h1>
-<div class="sub">Multi-process assembly line • Standardized Operation Parameter & Time Study</div>
+<div class="header-flex">
+  <div>
+    <h1>🏭 Assembly Time Study</h1>
+    <div class="sub">Multi-process assembly line • Parameter & Time Study</div>
+  </div>
+  <button class="alt" onclick="toggleTheme()" id="themeBtn" style="padding:8px 12px;">🌙 Dark Mode</button>
+</div>
 
 <!-- STOPWATCH CARD -->
 <div class="card">
 <div class="card-header">
-  <h2>⏱️ Time Study Stopwatch</h2>
+  <h2>⏱️ Stopwatch</h2>
 </div>
 <div class="sw-container">
   <div class="sw-display" id="swTime">00:00.00</div>
   <div class="sw-controls">
     <button id="startStopBtn" class="success" onclick="swStartStop()">▶ Start</button>
     <button id="lapBtn" class="warning" onclick="swLap()" disabled>🚩 Lap</button>
-    <button class="alt" onclick="swReset()">🔄 Reset</button>
+    <button class="alt" onclick="swReset()" title="Reset" style="padding:9px 12px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
   </div>
-  <div class="laps-container">
-    <table>
-      <thead><tr><th>Lap Ke-</th><th>Waktu Lap</th><th>Total Waktu</th></tr></thead>
-      <tbody id="lapTableBody">
-        <tr><td colspan="3" style="text-align:center;color:var(--gray)">Belum ada catatan waktu.</td></tr>
-      </tbody>
-    </table>
+  <div class="laps-list" id="lapsContainer">
+    <div style="text-align:center;color:var(--gray);font-size:12px;padding:10px;">Belum ada catatan waktu.</div>
   </div>
 </div>
 </div>
 
+<!-- AREA YANG AKAN DI-CAPTURE JADI GAMBAR -->
+<div id="captureArea">
+
 <!-- TARGET CARD -->
-<div class="card">
+<div class="card" style="margin-bottom:12px;">
 <div class="card-header">
-  <h2>🎯 Setup Target Operasional</h2>
-  <button onclick="clearTarget()" class="danger">🗑️ Kosongkan Target</button>
+  <h2>🎯 Target Operasional</h2>
+  <button onclick="clearTarget()" class="danger">🗑️ Reset</button>
 </div>
 <div class="grid">
 <div class="field"><label>Produk</label><input id="product" value=""></div>
-<div class="field"><label>Target Produk (pcs)</label><input id="target" type="number" value="" min="0"></div>
+<div class="field"><label>Target (pcs)</label><input id="target" type="number" value="" min="0"></div>
 <div class="field"><label>Jam Kerja</label><input id="hours" type="number" value="" min="0.1" step=".1"></div>
 <div class="field"><label>Efisiensi (%)</label><input id="eff" type="number" value="" min="1" max="100"></div>
 </div>
 </div>
 
-<!-- MANPOWER CARD (2-Baris Card Layout tanpa geser kanan-kiri) -->
-<div class="card">
+<!-- MANPOWER CARD -->
+<div class="card" style="margin-bottom:12px;">
 <div class="card-header">
-  <h2>👥 Alokasi Manpower Line</h2>
-  <button onclick="clearAllData()" class="danger">🗑️ Kosongkan Tabel</button>
+  <h2>👥 Alokasi Manpower</h2>
+  <button onclick="clearAllData()" class="danger">🗑️ Reset</button>
 </div>
-
-<div class="process-list" id="processList">
-  <!-- Dynamic Cards Here -->
-</div>
-
-<button onclick="addItem()" style="margin-top:14px;">➕ Tambah Proses Baru</button>
-<div class="note">💡 Masukkan CT Batch & Qty/Batch. Sistem otomatis mengkalkulasi waktu per pcs dan kapasitas tim secara *real-time*.</div>
+<div class="process-list" id="processList"></div>
+<button onclick="addItem()" style="margin-top:10px;width:100%;justify-content:center;">➕ Tambah Proses</button>
+<div class="note">💡 Masukkan CT Batch & Qty/Batch untuk kalkulasi otomatis.</div>
 </div>
 
 <!-- EVALUATION CARD -->
-<div class="card">
+<div class="card" style="margin-bottom:12px;">
 <div class="card-header">
   <h2>📊 Evaluasi Kapasitas</h2>
 </div>
 <div class="results">
-<div class="metric"><div class="lab">Total Operator</div><div class="val" id="totalOps">-</div></div>
+<div class="metric"><div class="lab">Total OP</div><div class="val" id="totalOps">-</div></div>
 <div class="metric"><div class="lab">Kapasitas Line</div><div class="val" id="lineCap">-</div></div>
-<div class="metric"><div class="lab">Target / Jam</div><div class="val" id="targetHour">-</div></div>
+<div class="metric"><div class="lab">Target/Jam</div><div class="val" id="targetHour">-</div></div>
 <div class="metric"><div class="lab">Gap Target</div><div class="val" id="gap">-</div></div>
-<div class="metric" style="border-left-color:#b91c1c;"><div class="lab">Titik Bottleneck</div><div class="val bottleneck" id="bottle">-</div></div>
+<div class="metric" style="border-left-color:#b91c1c;"><div class="lab">Bottleneck</div><div class="val bottleneck" id="bottle">-</div></div>
 </div>
-<div class="status" id="status">ℹ️ Masukkan parameter target operasional dan data proses untuk melihat status evaluasi.</div>
+<div class="status" id="status">ℹ️ Masukkan parameter target dan data proses.</div>
 </div>
 
 <!-- SIMULATION CARD -->
-<div class="card">
+<div class="card" style="margin-bottom:0;">
 <div class="card-header">
-  <h2>🔍 Simulasi Optimalisasi Manpower</h2>
+  <h2>🔍 Simulasi Manpower</h2>
 </div>
-<div class="table-responsive">
-<table>
-<thead><tr><th>Proses</th><th>Operator Saat Ini</th><th>Operator Minimum Ideal</th><th>Kapasitas Saat Ini</th><th>Kapasitas +1 OP</th></tr></thead>
-<tbody id="sim"></tbody>
-</table>
+<div class="sim-list" id="simList">
+  <div style="text-align:center;color:var(--gray);font-size:12px;padding:10px;">Belum ada data proses.</div>
 </div>
+</div>
+
+</div> <!-- END CAPTURE AREA -->
+
+<!-- EXPORT IMAGE CARD -->
+<div class="card" style="background:#eff6ff;border-color:#bfdbfe;margin-top:14px;">
+<div class="card-header" style="border-bottom-color:#bfdbfe;">
+  <h2 style="color:#1e40af;">📸 Bagikan Laporan sebagai Gambar</h2>
+</div>
+<button class="success" onclick="downloadImage()" style="width:100%;justify-content:center;padding:12px;font-size:15px;background:#2563eb;">📥 Simpan Hasil ke Gambar (HD)</button>
+<div class="note" style="color:#1e40af;margin-top:8px;">ℹ️ Ukuran gambar kini dioptimalkan agar pas dan proporsional saat dibuka di galeri HP maupun WhatsApp.</div>
 </div>
 </div>
 
 <script>
+// --- THEME TOGGLE ---
+function toggleTheme(){
+  const body = document.body;
+  const btn = document.getElementById('themeBtn');
+  if(body.getAttribute('data-theme') === 'dark'){
+    body.setAttribute('data-theme', 'light');
+    btn.textContent = '🌙 Dark Mode';
+  } else {
+    body.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️ Light Mode';
+  }
+}
+
 // --- STOPWATCH SCRIPT ---
 let swStartTime = 0, swElapsedTime = 0, swTimerInterval = null, swRunning = false;
 let lapList = [];
@@ -200,14 +232,15 @@ function swLap() {
   let diff = currentLapTime - prevTotal;
   lapList.push({ lapTime: diff, total: currentLapTime });
   
-  let tbody = document.getElementById("lapTableBody");
-  tbody.innerHTML = "";
+  let container = document.getElementById("lapsContainer");
+  container.innerHTML = "";
   lapList.forEach((item, index) => {
-    let tr = document.createElement("tr");
-    tr.innerHTML = `<td>Lap ${index + 1}</td><td>${formatTime(item.lapTime)}</td><td>${formatTime(item.total)}</td>`;
-    tbody.appendChild(tr);
+    let div = document.createElement("div");
+    div.className = "lap-item";
+    div.innerHTML = `<span><b>Lap ${index + 1}</b>: ${formatTime(item.lapTime)}</span><span>Total: ${formatTime(item.total)}</span>`;
+    container.appendChild(div);
   });
-  tbody.parentElement.parentElement.scrollTop = tbody.parentElement.parentElement.scrollHeight;
+  container.scrollTop = container.scrollHeight;
 }
 
 function swReset() {
@@ -220,7 +253,7 @@ function swReset() {
   btn.textContent = "▶ Start";
   btn.className = "success";
   document.getElementById("lapBtn").disabled = true;
-  document.getElementById("lapTableBody").innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--gray)">Belum ada catatan waktu.</td></tr>`;
+  document.getElementById("lapsContainer").innerHTML = `<div style="text-align:center;color:var(--gray);font-size:12px;padding:10px;">Belum ada catatan waktu.</div>`;
 }
 
 // --- CALCULATOR SCRIPT ---
@@ -254,14 +287,14 @@ function render(){
         <input type="number" min="1" placeholder="1" value="${d.qty || ''}" oninput="data[${i}].qty=num(this.value);calc()">
       </div>
       <div>
-        <label>Jumlah Operator</label>
+        <label>Operator</label>
         <input type="number" min="0" placeholder="0" value="${d.ops || ''}" oninput="data[${i}].ops=num(this.value);calc()">
       </div>
     </div>
     <div class="process-grid-bottom">
-      <div>CT / pcs: <span id="ctpc${i}">-</span></div>
+      <div>CT/pcs: <span id="ctpc${i}">-</span></div>
       <div>Output/OP: <span id="opcap${i}">-</span></div>
-      <div>Kapasitas Tim: <span id="teamcap${i}">-</span></div>
+      <div>Tim: <span id="teamcap${i}">-</span></div>
     </div>
   `;
   container.appendChild(card);
@@ -282,7 +315,7 @@ function removeItem(i){
 }
 
 function clearTarget(){
- if(confirm("Apakah Anda yakin ingin mengosongkan data Target Operasional?")){
+ if(confirm("Kosongkan data Target Operasional?")){
   $('product').value = '';
   $('target').value = '';
   $('hours').value = '';
@@ -292,10 +325,29 @@ function clearTarget(){
 }
 
 function clearAllData(){
- if(confirm("Apakah Anda yakin ingin mengosongkan seluruh data tabel?")){
+ if(confirm("Kosongkan seluruh data tabel proses?")){
   data = [{process:"",ct:0,qty:1,ops:0}];
   render();
  }
+}
+
+// --- CONVERT TO OPTIMAL HD IMAGE (PNG) ---
+function downloadImage(){
+ const captureElement = document.getElementById('captureArea');
+ alert("📸 Sedang memproses gambar, mohon tunggu sebentar...");
+ html2canvas(captureElement, { 
+   scale: 2, 
+   useCORS: true,
+   width: 600,
+   windowWidth: 600
+ }).then(canvas => {
+   const link = document.createElement('a');
+   link.download = `TimeStudy_${($('product').value || 'Produk').replace(/\s+/g, '_')}.png`;
+   link.href = canvas.toDataURL('image/png', 1.0);
+   link.click();
+ }).catch(err => {
+   alert("❌ Gagal membuat gambar laporan.");
+ });
 }
 
 function calc(){
@@ -309,9 +361,9 @@ function calc(){
   const team=effective*d.ops;
   caps.push(team);
   
-  if($('ctpc'+i)) $('ctpc'+i).textContent=d.ct > 0 ? fmt2(ctpcs)+' dtk' : '-';
-  if($('opcap'+i)) $('opcap'+i).textContent=effective > 0 ? fmt(effective)+' pcs' : '-';
-  if($('teamcap'+i)) $('teamcap'+i).textContent=team > 0 ? fmt(team)+' pcs' : '-';
+  if($('ctpc'+i)) $('ctpc'+i).textContent=d.ct > 0 ? fmt2(ctpcs)+'s' : '-';
+  if($('opcap'+i)) $('opcap'+i).textContent=effective > 0 ? fmt(effective) : '-';
+  if($('teamcap'+i)) $('teamcap'+i).textContent=team > 0 ? fmt(team) : '-';
  });
  
  const validCaps = caps.filter(c => c > 0);
@@ -322,31 +374,48 @@ function calc(){
  
  $('totalOps').textContent=totalOps > 0 ? fmt(totalOps)+' OP' : '-';
  $('lineCap').textContent=lineCap > 0 ? fmt(lineCap)+' pcs' : '-';
- $('targetHour').textContent=targetHour > 0 ? fmt(targetHour)+' pcs/jam' : '-';
- $('gap').textContent=target > 0 ? (gap>=0?'+':'' )+fmt(gap)+' pcs' : '-';
+ $('targetHour').textContent=targetHour > 0 ? fmt(targetHour)+' pcs' : '-';
+ $('gap').textContent=target > 0 ? (gap>=0?'+':'' )+fmt(gap) : '-';
  $('bottle').textContent=(bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-';
  
  const statusEl = $('status');
  if(target > 0 && hours > 0){
    if(lineCap>=target){
     statusEl.className = 'status ok';
-    statusEl.innerHTML = '✅ Kapasitas line MENCUKUPI untuk target hari ini. Alokasi manpower aman.';
+    statusEl.innerHTML = '✅ Kapasitas MENCUKUPI untuk target.';
    } else {
     statusEl.className = 'status warn';
-    statusEl.innerHTML = '⚠️ Kapasitas KURANG! Fokus penambahan operator pada proses Bottleneck: '+((bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-')+'.';
+    statusEl.innerHTML = '⚠️ KURANG! Bottleneck: '+((bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-')+'.';
    }
  } else {
   statusEl.className = 'status';
-  statusEl.innerHTML = 'ℹ️ Masukkan parameter target operasional dan data proses untuk melihat status evaluasi.';
+  statusEl.innerHTML = 'ℹ️ Masukkan target operasional & data proses.';
  }
 
- let s='';
+ let simContainer = $('simList');
+ simContainer.innerHTML = '';
+ if(data.length === 0 || (data.length === 1 && !data[0].process && data[0].ops === 0)){
+   simContainer.innerHTML = `<div style="text-align:center;color:var(--gray);font-size:12px;padding:10px;">Belum ada data proses.</div>`;
+   return;
+ }
+
  data.forEach((d)=>{
    const ctpcs=d.qty>0 ? d.ct/d.qty : 0, theory=d.ct>0?(hours*3600/d.ct)*d.qty:0, effcap=theory*eff;
    const minOps=effcap>0 && target>0 ? Math.ceil(target/effcap) : 0;
-   s+=`<tr><td>${d.process || '-'}</td><td>${fmt(d.ops)} OP</td><td>${target > 0 ? fmt(minOps)+' OP' : '-'}</td><td>${effcap > 0 ? fmt(effcap*d.ops)+' pcs' : '-'}</td><td>${effcap > 0 ? fmt(effcap*(d.ops+1))+' pcs' : '-'}</td></tr>`;
+   
+   let simCard = document.createElement('div');
+   simCard.className = 'sim-card';
+   simCard.innerHTML = `
+     <div class="sim-card-title">⚙️ ${d.process || 'Proses Tanpa Nama'}</div>
+     <div class="sim-grid">
+       <div>OP Saat Ini: <span>${fmt(d.ops)} OP</span></div>
+       <div>OP Min Ideal: <span>${target > 0 ? fmt(minOps)+' OP' : '-'}</span></div>
+       <div>Kapasitas Saat Ini: <span>${effcap > 0 ? fmt(effcap*d.ops)+' pcs' : '-'}</span></div>
+       <div>Kapasitas (+1 OP): <span>${effcap > 0 ? fmt(effcap*(d.ops+1))+' pcs' : '-'}</span></div>
+     </div>
+   `;
+   simContainer.appendChild(simCard);
  });
- $('sim').innerHTML=s;
 }
 document.querySelectorAll('input').forEach(x=>x.addEventListener('input',calc));
 render();
