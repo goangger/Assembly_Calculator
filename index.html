@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Assembly Time Study & Capacity Calculator</title>
-<!-- Pustaka untuk ubah HTML jadi Gambar HD -->
+<title>Assembly Calculator Suite</title>
+<!-- Pustaka html2canvas untuk ekspor gambar -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root { --navy: #1e3a8a; --emerald: #10b981; --white: #ffffff; --bg: #f8fafc; --text: #0f172a; --gray: #64748b; --border: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); }
@@ -13,13 +13,50 @@
 *{box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);padding-bottom:40px;transition:background 0.3s, color 0.3s}
 .wrap{max-width:1200px;margin:auto;padding:14px}
+
+/* SPLASH SCREEN & ANIMATED MASCOT */
+#welcomeScreen {
+  position: fixed; top:0; left:0; width:100vw; height:100vh;
+  background: var(--bg); z-index: 9999;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; padding: 20px; transition: opacity 0.5s ease;
+}
+.bot-cartoon {
+  width: 130px; height: 130px; margin-bottom: 20px;
+  animation: floatBot 2.5s ease-in-out infinite alternate;
+}
+@keyframes floatBot {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+  100% { transform: translateY(0px) rotate(-3deg); }
+}
+.welcome-title { font-size: 24px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+.welcome-sub { font-size: 14px; color: var(--gray); margin-bottom: 24px; max-width: 400px; line-height: 1.5; }
+.enter-btn {
+  background: var(--navy); color: white; border: 0; padding: 12px 28px;
+  font-size: 15px; font-weight: 700; border-radius: 12px; cursor: pointer;
+  box-shadow: var(--shadow); transition: transform 0.2s;
+}
+.enter-btn:hover { transform: scale(1.03); }
+.enter-hint { font-size: 11px; color: var(--gray); margin-top: 10px; }
+
+/* NAV TABS */
+.main-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+.nav-tab {
+  padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 13px;
+  cursor: pointer; background: transparent; color: var(--gray); border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.nav-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+
+/* MAIN LAYOUT & CARDS */
 .header-flex{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 h1{margin:0 0 4px;color:var(--navy);font-size:20px;display:flex;align-items:center;gap:8px}
 .sub{color:var(--gray);font-size:12px}
 .card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);transition:background 0.3s, border 0.3s}
 .card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--bg);padding-bottom:10px;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .card-header h2{margin:0;font-size:15px;color:var(--navy);display:flex;align-items:center;gap:6px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 label{display:block;font-size:11px;font-weight:700;margin-bottom:4px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px}
 input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--white);color:var(--text);transition:all 0.2s}
 input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(30,58,138,0.1)}
@@ -48,7 +85,7 @@ button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-
 .sim-grid div span{font-weight:700;color:var(--text);display:block;font-size:13px;margin-top:2px}
 
 /* EVALUATION METRICS */
-.results{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.results{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .metric{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
 .lab{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
 .val{font-size:18px;font-weight:800;margin-top:4px;color:var(--text)}
@@ -61,17 +98,21 @@ button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-
 /* STOPWATCH STYLE */
 .sw-container{text-align:center;padding:2px}
 .sw-display{font-size:36px;font-weight:800;color:var(--navy);font-family:monospace;margin:6px 0;letter-spacing:1px}
-.sw-controls{display:flex;justify-content:center;gap:8px;margin-bottom:10px;align-items:center}
+.sw-controls{display:flex;justify-content:center;gap:8px;margin-bottom:12px;align-items:center}
+.stopwatch-hint { font-size: 11px; color: var(--gray); text-align: center; margin: 12px 0; line-height: 1.4; padding: 0 5px; }
 .laps-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-top:8px}
-.lap-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;font-size:12px}
+.lap-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:grid;grid-template-columns:1fr 1fr auto;align-items:center;font-size:11px;gap:8px;text-align:left;}
+.lap-item .lap-num { font-weight: 700; color: var(--navy); }
+.lap-item .lap-tot { text-align: center; color: var(--text); }
+.use-lap-btn{background:var(--emerald);color:white;border:0;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700;white-space:nowrap;justify-self:end;}
 
-/* AREA CAPTURE OPTIMAL (Lebar proporsional pas layar) */
+/* AREA CAPTURE OPTIMAL */
 #captureArea { 
   background: var(--bg); 
   padding: 16px; 
   border-radius: 16px; 
   width: 100%;
-  max-width: 600px; /* Lebar kompak agar tidak terlalu panjang ke bawah */
+  max-width: 600px; 
   margin: 0 auto;
 }
 
@@ -80,14 +121,80 @@ button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-
 </style>
 </head>
 <body data-theme="light">
+
+<!-- WELCOME / SPLASH SCREEN -->
+<div id="welcomeScreen">
+  <!-- ANIMATED CARTOON MASCOT SVG -->
+  <svg class="bot-cartoon" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="50" y="60" width="100" height="80" rx="20" fill="#1e3a8a"/>
+    <rect x="65" y="75" width="70" height="40" rx="10" fill="#60a5fa"/>
+    <circle cx="85" cy="95" r="8" fill="#1e293b"/>
+    <circle cx="115" cy="95" r="8" fill="#1e293b"/>
+    <circle cx="87" cy="93" r="3" fill="#ffffff"/>
+    <circle cx="117" cy="93" r="3" fill="#ffffff"/>
+    <path d="M90 108 Q100 115 110 108" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+    <rect x="92" y="30" width="16" height="30" rx="4" fill="#64748b"/>
+    <circle cx="100" cy="26" r="10" fill="#10b981"/>
+    <rect x="25" y="80" width="25" height="16" rx="8" fill="#3b82f6"/>
+    <rect x="150" y="80" width="25" height="16" rx="8" fill="#3b82f6"/>
+    <rect x="70" y="140" width="20" height="35" rx="10" fill="#64748b"/>
+    <rect x="110" y="140" width="20" height="35" rx="10" fill="#64748b"/>
+  </svg>
+  <div class="welcome-title">Selamat Datang di Assembly Calculator</div>
+  <div class="welcome-sub">Sistem Pengolah Studi Waktu, Penyesuaian Target Durasi SPA, dan Alokasi Manpower Assembly</div>
+  <button class="enter-btn" onclick="enterApp()">Lanjutkan ke Menu ➔</button>
+  <div class="enter-hint">Atau tekan tombol <b>ENTER</b> di keyboard Anda</div>
+</div>
+
 <div class="wrap">
 <div class="header-flex">
   <div>
-    <h1>🏭 Assembly Time Study</h1>
-    <div class="sub">Multi-process assembly line • Parameter & Time Study</div>
+    <h1>🏭 Assembly Calculator Suite</h1>
+    <div class="sub">Multi-process assembly line • SPA & Time Study Management</div>
   </div>
   <button class="alt" onclick="toggleTheme()" id="themeBtn" style="padding:8px 12px;">🌙 Dark Mode</button>
 </div>
+
+<!-- NAVIGATION MENU TABS -->
+<div class="main-nav">
+  <button class="nav-tab active" id="tab1Btn" onclick="switchTab(1)">1. Pergantian SPA & Pemakaian Operator</button>
+  <button class="nav-tab" id="tab2Btn" onclick="switchTab(2)">2. Assembly Time Study & Capacity</button>
+</div>
+
+<!-- ================= MENU 1: PERGANTIAN SPA & PEMAKAIAN OPERATOR ================= -->
+<div id="menuView1">
+  <div class="card">
+    <div class="card-header">
+      <h2>🔄 Penyesuaian Target Durasi & Operator (Pergantian SPA / WIP)</h2>
+    </div>
+    <div class="grid" style="margin-bottom:12px;">
+      <div class="field"><label>Nama Produk / SPA</label><input id="spaProduct" placeholder="Misal: Model A8602"></div>
+      <div class="field"><label>Target Standard 8 Jam (pcs)</label><input id="spaStdTarget" type="number" placeholder="Misal: 2000" oninput="calcSPA()"></div>
+      <div class="field"><label>Jam Kerja Standard (Jam)</label><input id="spaStdHours" type="number" value="8" step="0.1" oninput="calcSPA()"></div>
+    </div>
+    <div class="grid" style="margin-bottom:12px;">
+      <div class="field"><label>Jam Kerja Aktual / Durasi Run (Jam)</label><input id="spaActHours" type="number" placeholder="Misal: 4 atau 2" step="0.1" oninput="calcSPA()"></div>
+      <div class="field"><label>Operator Standard (Orang)</label><input id="spaStdOps" type="number" placeholder="Misal: 10" oninput="calcSPA()"></div>
+      <div class="field"><label>Operator Aktual (Orang)</label><input id="spaActOps" type="number" placeholder="Misal: 8" oninput="calcSPA()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>📊 Hasil Kalkulasi Penyesuaian Target</h2>
+    </div>
+    <div class="results">
+      <div class="metric"><div class="lab">Target Durasi Aktual</div><div class="val" id="spaResTimeTarget">-</div></div>
+      <div class="metric"><div class="lab">Target Penyesuaian OP</div><div class="val" id="spaResOpTarget">-</div></div>
+      <div class="metric"><div class="lab">Target Final disesuaikan</div><div class="val" id="spaResFinalTarget" style="color:var(--navy);">-</div></div>
+      <div class="metric"><div class="lab">Rata-rata Output / Jam</div><div class="val" id="spaResPerHour">-</div></div>
+    </div>
+    <div class="status ok" id="spaStatus" style="margin-top:14px;">ℹ️ Masukkan parameter SPA dan Jam Kerja Aktual untuk melihat target penyesuaian.</div>
+  </div>
+</div>
+
+<!-- ================= MENU 2: ASSEMBLY TIME STUDY & CAPACITY (PROJECT SUDAH JADI) ================= -->
+<div id="menuView2" style="display:none;">
 
 <!-- STOPWATCH CARD -->
 <div class="card">
@@ -101,6 +208,7 @@ button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-
     <button id="lapBtn" class="warning" onclick="swLap()" disabled>🚩 Lap</button>
     <button class="alt" onclick="swReset()" title="Reset" style="padding:9px 12px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
   </div>
+  <div class="stopwatch-hint">Tombol warna hijau "Gunakan" untuk memasukkan waktu kumulatif & qty ke kolom batch sesuai urutan proses.</div>
   <div class="laps-list" id="lapsContainer">
     <div style="text-align:center;color:var(--gray);font-size:12px;padding:10px;">Belum ada catatan waktu.</div>
   </div>
@@ -116,9 +224,12 @@ button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-
   <h2>🎯 Target Operasional</h2>
   <button onclick="clearTarget()" class="danger">🗑️ Reset</button>
 </div>
-<div class="grid">
+<div class="grid" style="margin-bottom:10px;">
 <div class="field"><label>Produk</label><input id="product" value=""></div>
-<div class="field"><label>Target (pcs)</label><input id="target" type="number" value="" min="0"></div>
+<div class="field"><label>Target Bersih (pcs)</label><input id="target" type="number" value="" min="0"></div>
+<div class="field"><label>Reject (%)</label><input id="rejectRate" type="number" value="5" min="0" max="100" step=".1"></div>
+</div>
+<div class="grid" style="grid-template-columns:repeat(2,1fr);">
 <div class="field"><label>Jam Kerja</label><input id="hours" type="number" value="" min="0.1" step=".1"></div>
 <div class="field"><label>Efisiensi (%)</label><input id="eff" type="number" value="" min="1" max="100"></div>
 </div>
@@ -143,10 +254,10 @@ button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-
 <div class="results">
 <div class="metric"><div class="lab">Total OP</div><div class="val" id="totalOps">-</div></div>
 <div class="metric"><div class="lab">Kapasitas Line</div><div class="val" id="lineCap">-</div></div>
-<div class="metric"><div class="lab">Target/Jam</div><div class="val" id="targetHour">-</div></div>
+<div class="metric"><div class="lab">Target Total (+Reject)</div><div class="val" id="targetTotal">-</div></div>
 <div class="metric"><div class="lab">Gap Target</div><div class="val" id="gap">-</div></div>
-<div class="metric" style="border-left-color:#b91c1c;"><div class="lab">Bottleneck</div><div class="val bottleneck" id="bottle">-</div></div>
 </div>
+<div class="metric" style="border-left-color:#b91c1c;margin-top:10px;"><div class="lab">Bottleneck</div><div class="val bottleneck" id="bottle">-</div></div>
 <div class="status" id="status">ℹ️ Masukkan parameter target dan data proses.</div>
 </div>
 
@@ -168,11 +279,88 @@ button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0;font-
   <h2 style="color:#1e40af;">📸 Bagikan Laporan sebagai Gambar</h2>
 </div>
 <button class="success" onclick="downloadImage()" style="width:100%;justify-content:center;padding:12px;font-size:15px;background:#2563eb;">📥 Simpan Hasil ke Gambar (HD)</button>
-<div class="note" style="color:#1e40af;margin-top:8px;">ℹ️ Ukuran gambar kini dioptimalkan agar pas dan proporsional saat dibuka di galeri HP maupun WhatsApp.</div>
+<div class="note" style="color:#1e40af;margin-top:8px;">ℹ️ Ukuran gambar dioptimalkan agar pas dan proporsional saat dibuka di galeri HP maupun WhatsApp.</div>
 </div>
+
+</div> <!-- END MENU VIEW 2 -->
+
 </div>
 
 <script>
+// --- WELCOME SCREEN LOGIC ---
+function enterApp() {
+  const ws = document.getElementById('welcomeScreen');
+  ws.style.opacity = '0';
+  setTimeout(() => { ws.style.display = 'none'; }, 500);
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Enter') {
+    const ws = document.getElementById('welcomeScreen');
+    if (ws && ws.style.display !== 'none') {
+      enterApp();
+    }
+  }
+});
+
+// --- MENU SWITCHING LOGIC ---
+function switchTab(tabIndex) {
+  const v1 = document.getElementById('menuView1');
+  const v2 = document.getElementById('menuView2');
+  const b1 = document.getElementById('tab1Btn');
+  const b2 = document.getElementById('tab2Btn');
+
+  if(tabIndex === 1) {
+    v1.style.display = 'block';
+    v2.style.display = 'none';
+    b1.className = 'nav-tab active';
+    b2.className = 'nav-tab';
+  } else {
+    v1.style.display = 'none';
+    v2.style.display = 'block';
+    b1.className = 'nav-tab';
+    b2.className = 'nav-tab active';
+  }
+}
+
+// --- MENU 1: KALKULASI SPA & OPERATOR ---
+function calcSPA() {
+  const stdTarget = num($('spaStdTarget').value);
+  const stdHours = num($('spaStdHours').value) || 8;
+  const actHours = num($('spaActHours').value);
+  const stdOps = num($('spaStdOps').value);
+  const actOps = num($('spaActOps').value);
+
+  if (stdTarget > 0 && actHours > 0) {
+    // 1. Disesuaikan berdasarkan proporsi jam kerja aktual
+    const targetBasedOnTime = (stdTarget / stdHours) * actHours;
+    
+    // 2. Disesuaikan berdasarkan rasio operator (jika diisi)
+    let finalTarget = targetBasedOnTime;
+    let targetBasedOnOp = targetBasedOnTime;
+    
+    if (stdOps > 0 && actOps > 0) {
+      targetBasedOnOp = targetBasedOnTime * (actOps / stdOps);
+      finalTarget = targetBasedOnOp;
+    }
+
+    const perHourOutput = finalTarget / actHours;
+
+    $('spaResTimeTarget').textContent = fmt(targetBasedOnTime) + ' pcs';
+    $('spaResOpTarget').textContent = (stdOps > 0 && actOps > 0) ? fmt(targetBasedOnOp) + ' pcs' : '-';
+    $('spaResFinalTarget').textContent = fmt(finalTarget) + ' pcs';
+    $('spaResPerHour').textContent = fmt(perHourOutput) + ' pcs/jam';
+
+    $('spaStatus').textContent = `✅ Target disesuaikan menjadi ${fmt(finalTarget)} pcs untuk durasi ${actHours} jam dengan ${actOps || stdOps || '-'} operator.`;
+  } else {
+    $('spaResTimeTarget').textContent = '-';
+    $('spaResOpTarget').textContent = '-';
+    $('spaResFinalTarget').textContent = '-';
+    $('spaResPerHour').textContent = '-';
+    $('spaStatus').textContent = 'ℹ️ Masukkan parameter SPA dan Jam Kerja Aktual untuk melihat target penyesuaian.';
+  }
+}
+
 // --- THEME TOGGLE ---
 function toggleTheme(){
   const body = document.body;
@@ -190,7 +378,7 @@ function toggleTheme(){
 let swStartTime = 0, swElapsedTime = 0, swTimerInterval = null, swRunning = false;
 let lapList = [];
 
-function formatTime(ms) {
+function formatOriginalTime(ms) {
   let minutes = Math.floor(ms / 60000);
   let seconds = Math.floor((ms % 60000) / 1000);
   let centiseconds = Math.floor((ms % 1000) / 10);
@@ -204,7 +392,7 @@ function formatTime(ms) {
 function swUpdateDisplay() {
   let currentTime = Date.now();
   swElapsedTime = currentTime - swStartTime;
-  document.getElementById("swTime").textContent = formatTime(swElapsedTime);
+  document.getElementById("swTime").textContent = formatOriginalTime(swElapsedTime);
 }
 
 function swStartStop() {
@@ -232,12 +420,29 @@ function swLap() {
   let diff = currentLapTime - prevTotal;
   lapList.push({ lapTime: diff, total: currentLapTime });
   
+  renderLaps();
+}
+
+function renderLaps(){
   let container = document.getElementById("lapsContainer");
   container.innerHTML = "";
+  if(lapList.length === 0){
+    container.innerHTML = `<div style="text-align:center;color:var(--gray);font-size:12px;padding:10px;">Belum ada catatan waktu.</div>`;
+    return;
+  }
   lapList.forEach((item, index) => {
+    let lapNum = index + 1;
+    let lapSec = (item.lapTime / 1000).toFixed(2);
+    let totalFormatted = formatOriginalTime(item.total);
+    let totalSecondsValue = (item.total / 1000).toFixed(2);
+    
     let div = document.createElement("div");
     div.className = "lap-item";
-    div.innerHTML = `<span><b>Lap ${index + 1}</b>: ${formatTime(item.lapTime)}</span><span>Total: ${formatTime(item.total)}</span>`;
+    div.innerHTML = `
+      <span class="lap-num">Lap ${lapNum}: ${lapSec}s</span>
+      <span class="lap-tot">Total: ${totalFormatted}</span>
+      <button class="use-lap-btn" onclick="applyDataToProcess(${totalSecondsValue}, ${lapNum})" title="Masukkan Total dan Qty ke CT & Qty Batch">Gunakan</button>
+    `;
     container.appendChild(div);
   });
   container.scrollTop = container.scrollHeight;
@@ -253,7 +458,19 @@ function swReset() {
   btn.textContent = "▶ Start";
   btn.className = "success";
   document.getElementById("lapBtn").disabled = true;
-  document.getElementById("lapsContainer").innerHTML = `<div style="text-align:center;color:var(--gray);font-size:12px;padding:10px;">Belum ada catatan waktu.</div>`;
+  renderLaps();
+}
+
+function applyDataToProcess(totalSeconds, lapNumber){
+  let targetIndex = data.findIndex(d => (!d.ct || d.ct === 0) && (!d.qty || d.qty <= 1));
+  if(targetIndex === -1){
+    addItem();
+    targetIndex = data.length - 1;
+  }
+  data[targetIndex].ct = totalSeconds;
+  data[targetIndex].qty = lapNumber;
+  render();
+  alert(`✅ Waktu Total ${totalSeconds} detik & Qty ${lapNumber} berhasil dimasukkan ke Proses #${targetIndex + 1}!`);
 }
 
 // --- CALCULATOR SCRIPT ---
@@ -279,12 +496,12 @@ function render(){
     </div>
     <div class="process-grid">
       <div>
-        <label>CT Batch (dtk)</label>
-        <input type="number" min="0" step=".01" placeholder="0" value="${d.ct || ''}" oninput="data[${i}].ct=num(this.value);calc()">
+        <label>CT Batch (detik)</label>
+        <input type="number" id="ct_input_${i}" min="0" step=".01" placeholder="0" value="${d.ct || ''}" oninput="data[${i}].ct=num(this.value);calc()">
       </div>
       <div>
         <label>Qty / Batch</label>
-        <input type="number" min="1" placeholder="1" value="${d.qty || ''}" oninput="data[${i}].qty=num(this.value);calc()">
+        <input type="number" id="qty_input_${i}" min="1" placeholder="1" value="${d.qty || ''}" oninput="data[${i}].qty=num(this.value);calc()">
       </div>
       <div>
         <label>Operator</label>
@@ -318,6 +535,7 @@ function clearTarget(){
  if(confirm("Kosongkan data Target Operasional?")){
   $('product').value = '';
   $('target').value = '';
+  $('rejectRate').value = '5';
   $('hours').value = '';
   $('eff').value = '';
   calc();
@@ -331,7 +549,6 @@ function clearAllData(){
  }
 }
 
-// --- CONVERT TO OPTIMAL HD IMAGE (PNG) ---
 function downloadImage(){
  const captureElement = document.getElementById('captureArea');
  alert("📸 Sedang memproses gambar, mohon tunggu sebentar...");
@@ -351,7 +568,11 @@ function downloadImage(){
 }
 
 function calc(){
- const hours=num($('hours').value), eff=num($('eff').value)/100, target=num($('target').value);
+ const hours=num($('hours').value), eff=num($('eff').value)/100, baseTarget=num($('target').value);
+ const rejectRate=num($('rejectRate').value)/100;
+ 
+ const targetTotal = baseTarget > 0 ? Math.ceil(baseTarget / (1 - rejectRate)) : 0;
+ 
  let totalOps=0, caps=[];
  data.forEach((d,i)=>{
   totalOps+=d.ops;
@@ -369,20 +590,19 @@ function calc(){
  const validCaps = caps.filter(c => c > 0);
  const lineCap = validCaps.length > 0 ? Math.min(...validCaps) : 0;
  const bottleneckIndex = caps.indexOf(lineCap);
- const targetHour=hours?target/hours:0;
- const gap=lineCap-target;
+ const gap=lineCap-targetTotal;
  
  $('totalOps').textContent=totalOps > 0 ? fmt(totalOps)+' OP' : '-';
  $('lineCap').textContent=lineCap > 0 ? fmt(lineCap)+' pcs' : '-';
- $('targetHour').textContent=targetHour > 0 ? fmt(targetHour)+' pcs' : '-';
- $('gap').textContent=target > 0 ? (gap>=0?'+':'' )+fmt(gap) : '-';
+ $('targetTotal').textContent=targetTotal > 0 ? fmt(targetTotal)+' pcs' : '-';
+ $('gap').textContent=baseTarget > 0 ? (gap>=0?'+':'' )+fmt(gap) : '-';
  $('bottle').textContent=(bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-';
  
  const statusEl = $('status');
- if(target > 0 && hours > 0){
-   if(lineCap>=target){
+ if(baseTarget > 0 && hours > 0){
+   if(lineCap>=targetTotal){
     statusEl.className = 'status ok';
-    statusEl.innerHTML = '✅ Kapasitas MENCUKUPI untuk target.';
+    statusEl.innerHTML = '✅ Kapasitas MENCUKUPI untuk target termasuk alokasi reject.';
    } else {
     statusEl.className = 'status warn';
     statusEl.innerHTML = '⚠️ KURANG! Bottleneck: '+((bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-')+'.';
@@ -401,7 +621,7 @@ function calc(){
 
  data.forEach((d)=>{
    const ctpcs=d.qty>0 ? d.ct/d.qty : 0, theory=d.ct>0?(hours*3600/d.ct)*d.qty:0, effcap=theory*eff;
-   const minOps=effcap>0 && target>0 ? Math.ceil(target/effcap) : 0;
+   const minOps=effcap>0 && targetTotal>0 ? Math.ceil(targetTotal/effcap) : 0;
    
    let simCard = document.createElement('div');
    simCard.className = 'sim-card';
@@ -409,7 +629,7 @@ function calc(){
      <div class="sim-card-title">⚙️ ${d.process || 'Proses Tanpa Nama'}</div>
      <div class="sim-grid">
        <div>OP Saat Ini: <span>${fmt(d.ops)} OP</span></div>
-       <div>OP Min Ideal: <span>${target > 0 ? fmt(minOps)+' OP' : '-'}</span></div>
+       <div>OP Min Ideal: <span>${targetTotal > 0 ? fmt(minOps)+' OP' : '-'}</span></div>
        <div>Kapasitas Saat Ini: <span>${effcap > 0 ? fmt(effcap*d.ops)+' pcs' : '-'}</span></div>
        <div>Kapasitas (+1 OP): <span>${effcap > 0 ? fmt(effcap*(d.ops+1))+' pcs' : '-'}</span></div>
      </div>
