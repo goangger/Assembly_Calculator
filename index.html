@@ -5,61 +5,71 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Assembly Line Capacity Calculator</title>
 <style>
-:root { --navy: #1e3a8a; --emerald: #10b981; --white: #ffffff; --bg: #f3f4f6; --text: #111827; --gray: #6b7280; --border: #e5e7eb; }
-*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;background:var(--bg);color:var(--text); padding-bottom: 30px;}
-.wrap{max-width:1200px;margin:auto;padding:12px}h1{margin:0 0 5px; color:var(--navy); font-size: 22px;}.sub{color:var(--gray);margin-bottom:14px;font-size:12px}
-.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
-.card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--bg);padding-bottom:8px;margin-bottom:12px; flex-wrap: wrap; gap: 8px;}
-.card-header h2{margin:0;font-size:15px;color:var(--navy);border:none;padding:0}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.wide{grid-column:1/-1}
-label{display:block;font-size:11px;font-weight:700;margin-bottom:4px;color:var(--text)}.field{min-width:0}
-input{width:100%;padding:9px;border:1px solid #cfd3d8;border-radius:8px;font-size:14px;background:var(--white);transition:border-color 0.2s}
-input:focus{outline:none;border-color:var(--navy)}
-button{padding:9px 14px;border:0;border-radius:8px;background:var(--navy);color:var(--white);font-weight:700;cursor:pointer;margin-top:10px;transition:background 0.2s; font-size: 13px;}
-button:hover{background:#1e40af}
-button.alt{background:#e5e7eb;color:var(--text)}button.alt:hover{background:#d1d5db}
-button.success{background:#10b981}button.success:hover{background:#059669}
-button.warning{background:#f59e0b}button.warning:hover{background:#d97706}
-button.danger{background:#ef4444;color:white;padding:7px 10px;margin-top:0; font-size: 12px;}
+:root { --navy: #1e3a8a; --emerald: #10b981; --white: #ffffff; --bg: #f8fafc; --text: #0f172a; --gray: #64748b; --border: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); }
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);padding-bottom:40px;animation:fadeIn 0.5s ease-in-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+h1{margin:0 0 4px;color:var(--navy);font-size:24px;display:flex;align-items:center;gap:8px}
+.sub{color:var(--gray);margin-bottom:20px;font-size:13px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);transition:all 0.3s ease}
+.card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,0.05)}
+.card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--bg);padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.card-header h2{margin:0;font-size:16px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+label{display:block;font-size:11px;font-weight:700;margin-bottom:6px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px}
+input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:15px;background:var(--white);transition:all 0.2s}
+input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(30,58,138,0.1)}
+button{padding:10px 16px;border:0;border-radius:10px;background:var(--navy);color:var(--white);font-weight:700;cursor:pointer;transition:all 0.2s;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+button:hover{background:#1d4ed8;transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button.alt{background:#f1f5f9;color:var(--text)}button.alt:hover{background:#e2e8f0}
+button.success{background:var(--emerald)}button.success:hover{background:#059669}
+button.warning{background:#f59e0b;color:white}button.warning:hover{background:#d97706}
+button.danger{background:#ef4444;color:white;padding:8px 12px;margin-top:0;font-size:12px}
 button.danger:hover{background:#dc2626}
 
-/* Table Responsive Container */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-bottom: 8px;
-}
-table{width:100%;border-collapse:collapse;font-size:12px; min-width: 650px;}
-th,td{padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;vertical-align:middle}
-th{background:var(--bg);color:var(--text);font-weight:700}
-th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
-td input{padding:6px; font-size: 13px;}
-.small{width:65px; text-align:center}
+/* MOBILE FRIENDLY PROCESS CARDS (No Horizontal Scroll) */
+.process-list{display:flex;flex-direction:column;gap:12px}
+.process-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;transition:all 0.2s}
+.process-card:hover{border-color:#cbd5e1}
+.process-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.process-card-top input{font-weight:700;font-size:15px;color:var(--navy);background:var(--white)}
+.process-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.process-grid-bottom{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:12px;color:var(--gray)}
+.process-grid-bottom div span{font-weight:700;color:var(--text);display:block;font-size:13px;margin-top:2px}
 
-.results{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.metric{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:10px;padding:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
-.lab{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px}.val{font-size:18px;font-weight:800;margin-top:4px;color:var(--text)}
-.status{padding:12px;border-radius:10px;background:var(--bg);font-weight:700;margin-top:12px; font-size:13px; display:flex; align-items:center; gap:8px}
-.status.ok{background:var(--emerald);color:var(--white)}.status.warn{background:#fef2f2;color:#991b1b;border:1px solid #f87171}
+.results{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.metric{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.lab{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+.val{font-size:20px;font-weight:800;margin-top:4px;color:var(--text)}
+.status{padding:14px;border-radius:12px;background:var(--bg);font-weight:700;margin-top:14px;font-size:13px;display:flex;align-items:center;gap:10px;animation:pulseStatus 2s infinite}
+@keyframes pulseStatus{0%{opacity:1}50%{opacity:0.85}100%{opacity:1}}
+.status.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.status.warn{background:#fef2f2;color:#991b1b;border:1px solid #f87171}
 .bottleneck{color:#b91c1c}
-.note{font-size:11px;color:var(--gray);margin-top:8px}
+.note{font-size:12px;color:var(--gray);margin-top:12px}
 
-/* Stopwatch specific style */
+/* Simulasi Table Mobile Friendly */
+.table-responsive{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:550px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:right;vertical-align:middle}
+th{background:var(--bg);color:var(--gray);font-weight:700;text-transform:uppercase;font-size:11px}
+th:first-child,td:first-child{text-align:left}
+
+/* Stopwatch style */
 .sw-container{text-align:center;padding:5px}
-.sw-display{font-size:36px;font-weight:800;color:var(--navy);font-family:monospace;margin:8px 0}
+.sw-display{font-size:40px;font-weight:800;color:var(--navy);font-family:monospace;margin:8px 0;letter-spacing:1px}
 .sw-controls{display:flex;justify-content:center;gap:8px;margin-bottom:12px}
-.sw-controls button{margin-top:0;padding:7px 14px;font-size:12px}
-.laps-container{max-height:130px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:8px}
-.laps-container table {min-width: 100%;}
+.laps-container{max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:8px}
 
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.results{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.results{grid-template-columns:1fr}}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.results{grid-template-columns:1fr}.process-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>Assembly Line Capacity Calculator</h1>
+<h1>⚡ Assembly Line Capacity Calculator</h1>
 <div class="sub">Multi-process assembly line • Standardized Operation Parameter & Time Study</div>
 
 <!-- STOPWATCH CARD -->
@@ -70,9 +80,9 @@ td input{padding:6px; font-size: 13px;}
 <div class="sw-container">
   <div class="sw-display" id="swTime">00:00.00</div>
   <div class="sw-controls">
-    <button id="startStopBtn" class="success" onclick="swStartStop()">Start</button>
-    <button id="lapBtn" class="warning" onclick="swLap()" disabled>Lap</button>
-    <button class="alt" onclick="swReset()">Reset</button>
+    <button id="startStopBtn" class="success" onclick="swStartStop()">▶ Start</button>
+    <button id="lapBtn" class="warning" onclick="swLap()" disabled>🚩 Lap</button>
+    <button class="alt" onclick="swReset()">🔄 Reset</button>
   </div>
   <div class="laps-container">
     <table>
@@ -85,10 +95,11 @@ td input{padding:6px; font-size: 13px;}
 </div>
 </div>
 
+<!-- TARGET CARD -->
 <div class="card">
 <div class="card-header">
-  <h2>1. Setup Target Operasional</h2>
-  <button onclick="clearTarget()" class="danger">Kosongkan Target</button>
+  <h2>🎯 Setup Target Operasional</h2>
+  <button onclick="clearTarget()" class="danger">🗑️ Kosongkan Target</button>
 </div>
 <div class="grid">
 <div class="field"><label>Produk</label><input id="product" value=""></div>
@@ -98,40 +109,40 @@ td input{padding:6px; font-size: 13px;}
 </div>
 </div>
 
+<!-- MANPOWER CARD (2-Baris Card Layout tanpa geser kanan-kiri) -->
 <div class="card">
 <div class="card-header">
-  <h2>2. Alokasi Manpower Line</h2>
-  <button onclick="clearAllData()" class="danger">Kosongkan Tabel</button>
-</div>
-<div class="table-responsive">
-<table>
-<thead><tr>
-<th>No</th><th>Proses</th><th>CT Batch (dtk)</th><th>Qty/Batch</th><th>CT/pcs (dtk)</th><th>Operator</th><th>Output Efektif/OP</th><th>Kapasitas Tim</th><th>Aksi</th>
-</tr></thead>
-<tbody id="items"></tbody>
-</table>
-</div>
-<button onclick="addItem()">+ Tambah Proses</button>
-<div class="note">*Geser tabel ke kiri/kanan jika kolom tertutup. Ubah CT Batch & Qty/Batch untuk melihat waktu per proses aktual.</div>
+  <h2>👥 Alokasi Manpower Line</h2>
+  <button onclick="clearAllData()" class="danger">🗑️ Kosongkan Tabel</button>
 </div>
 
+<div class="process-list" id="processList">
+  <!-- Dynamic Cards Here -->
+</div>
+
+<button onclick="addItem()" style="margin-top:14px;">➕ Tambah Proses Baru</button>
+<div class="note">💡 Masukkan CT Batch & Qty/Batch. Sistem otomatis mengkalkulasi waktu per pcs dan kapasitas tim secara *real-time*.</div>
+</div>
+
+<!-- EVALUATION CARD -->
 <div class="card">
 <div class="card-header">
-  <h2>3. Evaluasi Kapasitas</h2>
+  <h2>📊 Evaluasi Kapasitas</h2>
 </div>
 <div class="results">
 <div class="metric"><div class="lab">Total Operator</div><div class="val" id="totalOps">-</div></div>
 <div class="metric"><div class="lab">Kapasitas Line</div><div class="val" id="lineCap">-</div></div>
 <div class="metric"><div class="lab">Target / Jam</div><div class="val" id="targetHour">-</div></div>
 <div class="metric"><div class="lab">Gap Target</div><div class="val" id="gap">-</div></div>
-<div class="metric" style="border-left-color: #b91c1c;"><div class="lab">Titik Bottleneck</div><div class="val bottleneck" id="bottle">-</div></div>
+<div class="metric" style="border-left-color:#b91c1c;"><div class="lab">Titik Bottleneck</div><div class="val bottleneck" id="bottle">-</div></div>
 </div>
-<div class="status" id="status">-</div>
+<div class="status" id="status">ℹ️ Masukkan parameter target operasional dan data proses untuk melihat status evaluasi.</div>
 </div>
 
+<!-- SIMULATION CARD -->
 <div class="card">
 <div class="card-header">
-  <h2>Simulasi Optimalisasi Manpower</h2>
+  <h2>🔍 Simulasi Optimalisasi Manpower</h2>
 </div>
 <div class="table-responsive">
 <table>
@@ -170,13 +181,13 @@ function swStartStop() {
   if (!swRunning) {
     swStartTime = Date.now() - swElapsedTime;
     swTimerInterval = setInterval(swUpdateDisplay, 30);
-    btn.textContent = "Pause";
+    btn.textContent = "⏸ Pause";
     btn.className = "warning";
     lapBtn.disabled = false;
     swRunning = true;
   } else {
     clearInterval(swTimerInterval);
-    btn.textContent = "Start";
+    btn.textContent = "▶ Start";
     btn.className = "success";
     swRunning = false;
   }
@@ -206,7 +217,7 @@ function swReset() {
   lapList = [];
   document.getElementById("swTime").textContent = "00:00.00";
   const btn = document.getElementById("startStopBtn");
-  btn.textContent = "Start";
+  btn.textContent = "▶ Start";
   btn.className = "success";
   document.getElementById("lapBtn").disabled = true;
   document.getElementById("lapTableBody").innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--gray)">Belum ada catatan waktu.</td></tr>`;
@@ -223,20 +234,37 @@ const fmt=x=>new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(Mat
 const fmt2=x=>new Intl.NumberFormat('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2}).format(x);
 
 function render(){
- let t=$('items'); t.innerHTML='';
+ let container=$('processList'); container.innerHTML='';
  data.forEach((d,i)=>{
-  let tr=document.createElement('tr');
-  tr.innerHTML=`
-  <td>${i+1}</td>
-  <td><input value="${d.process}" oninput="data[${i}].process=this.value;calc()"></td>
-  <td><input type="number" min="0" step=".01" value="${d.ct || ''}" oninput="data[${i}].ct=num(this.value);calc()"></td>
-  <td><input type="number" min="1" value="${d.qty || ''}" oninput="data[${i}].qty=num(this.value);calc()"></td>
-  <td id="ctpc${i}">-</td>
-  <td><input class="small" type="number" min="0" value="${d.ops || ''}" oninput="data[${i}].ops=num(this.value);calc()"></td>
-  <td id="opcap${i}">-</td>
-  <td id="teamcap${i}">-</td>
-  <td><button class="danger" onclick="removeItem(${i})">X</button></td>`;
-  t.appendChild(tr);
+  let card=document.createElement('div');
+  card.className='process-card';
+  card.innerHTML=`
+    <div class="process-card-top">
+      <span style="font-weight:700;font-size:12px;color:var(--gray)">#${i+1}</span>
+      <input type="text" placeholder="Nama Proses..." value="${d.process}" oninput="data[${i}].process=this.value;calc()">
+      <button class="danger" onclick="removeItem(${i})">✕ Hapus</button>
+    </div>
+    <div class="process-grid">
+      <div>
+        <label>CT Batch (dtk)</label>
+        <input type="number" min="0" step=".01" placeholder="0" value="${d.ct || ''}" oninput="data[${i}].ct=num(this.value);calc()">
+      </div>
+      <div>
+        <label>Qty / Batch</label>
+        <input type="number" min="1" placeholder="1" value="${d.qty || ''}" oninput="data[${i}].qty=num(this.value);calc()">
+      </div>
+      <div>
+        <label>Jumlah Operator</label>
+        <input type="number" min="0" placeholder="0" value="${d.ops || ''}" oninput="data[${i}].ops=num(this.value);calc()">
+      </div>
+    </div>
+    <div class="process-grid-bottom">
+      <div>CT / pcs: <span id="ctpc${i}">-</span></div>
+      <div>Output/OP: <span id="opcap${i}">-</span></div>
+      <div>Kapasitas Tim: <span id="teamcap${i}">-</span></div>
+    </div>
+  `;
+  container.appendChild(card);
  });
  calc();
 }
@@ -264,7 +292,7 @@ function clearTarget(){
 }
 
 function clearAllData(){
- if(confirm("Apakah Anda yakin ingin mengosongkan seluruh data tabel? Data yang dihapus tidak dapat dikembalikan.")){
+ if(confirm("Apakah Anda yakin ingin mengosongkan seluruh data tabel?")){
   data = [{process:"",ct:0,qty:1,ops:0}];
   render();
  }
@@ -280,9 +308,10 @@ function calc(){
   const effective=theory*eff;
   const team=effective*d.ops;
   caps.push(team);
-  if($('ctpc'+i)) $('ctpc'+i).textContent=d.ct > 0 ? fmt2(ctpcs) : '-';
-  if($('opcap'+i)) $('opcap'+i).textContent=effective > 0 ? fmt(effective) : '-';
-  if($('teamcap'+i)) $('teamcap'+i).textContent=team > 0 ? fmt(team) : '-';
+  
+  if($('ctpc'+i)) $('ctpc'+i).textContent=d.ct > 0 ? fmt2(ctpcs)+' dtk' : '-';
+  if($('opcap'+i)) $('opcap'+i).textContent=effective > 0 ? fmt(effective)+' pcs' : '-';
+  if($('teamcap'+i)) $('teamcap'+i).textContent=team > 0 ? fmt(team)+' pcs' : '-';
  });
  
  const validCaps = caps.filter(c => c > 0);
@@ -294,32 +323,32 @@ function calc(){
  $('totalOps').textContent=totalOps > 0 ? fmt(totalOps)+' OP' : '-';
  $('lineCap').textContent=lineCap > 0 ? fmt(lineCap)+' pcs' : '-';
  $('targetHour').textContent=targetHour > 0 ? fmt(targetHour)+' pcs/jam' : '-';
- $('gap').textContent=target > 0 ? (gap>=0?'+':'' )+fmt(gap) : '-';
+ $('gap').textContent=target > 0 ? (gap>=0?'+':'' )+fmt(gap)+' pcs' : '-';
  $('bottle').textContent=(bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-';
  
  const statusEl = $('status');
  if(target > 0 && hours > 0){
    if(lineCap>=target){
     statusEl.className = 'status ok';
-    statusEl.textContent = '✓ Kapasitas line MENCUKUPI untuk target hari ini. Alokasi manpower aman.';
+    statusEl.innerHTML = '✅ Kapasitas line MENCUKUPI untuk target hari ini. Alokasi manpower aman.';
    } else {
     statusEl.className = 'status warn';
-    statusEl.textContent = '⚠ Kapasitas KURANG! Fokus penambahan operator pada proses Bottleneck: '+((bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-')+'.';
+    statusEl.innerHTML = '⚠️ Kapasitas KURANG! Fokus penambahan operator pada proses Bottleneck: '+((bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-')+'.';
    }
  } else {
   statusEl.className = 'status';
-  statusEl.textContent = 'Masukkan parameter target operasional dan data proses untuk melihat status evaluasi.';
+  statusEl.innerHTML = 'ℹ️ Masukkan parameter target operasional dan data proses untuk melihat status evaluasi.';
  }
 
  let s='';
  data.forEach((d)=>{
    const ctpcs=d.qty>0 ? d.ct/d.qty : 0, theory=d.ct>0?(hours*3600/d.ct)*d.qty:0, effcap=theory*eff;
    const minOps=effcap>0 && target>0 ? Math.ceil(target/effcap) : 0;
-   s+=`<tr><td>${d.process || '-'}</td><td>${fmt(d.ops)}</td><td>${target > 0 ? fmt(minOps) : '-'}</td><td>${effcap > 0 ? fmt(effcap*d.ops) : '-'}</td><td>${effcap > 0 ? fmt(effcap*(d.ops+1)) : '-'}</td></tr>`;
+   s+=`<tr><td>${d.process || '-'}</td><td>${fmt(d.ops)} OP</td><td>${target > 0 ? fmt(minOps)+' OP' : '-'}</td><td>${effcap > 0 ? fmt(effcap*d.ops)+' pcs' : '-'}</td><td>${effcap > 0 ? fmt(effcap*(d.ops+1))+' pcs' : '-'}</td></tr>`;
  });
  $('sim').innerHTML=s;
 }
-document.querySelectorAll('.grid input').forEach(x=>x.addEventListener('input',calc));
+document.querySelectorAll('input').forEach(x=>x.addEventListener('input',calc));
 render();
 </script>
 </body>
