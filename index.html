@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Assembly Line Capacity Calculator</title>
+<style>
+:root { --navy: #1e3a8a; --emerald: #10b981; --white: #ffffff; --bg: #f3f4f6; --text: #111827; --gray: #6b7280; --border: #e5e7eb; }
+*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+.wrap{max-width:1200px;margin:auto;padding:22px}h1{margin:0 0 5px; color:var(--navy)}.sub{color:var(--gray);margin-bottom:18px;font-size:14px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:15px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--bg);padding-bottom:10px;margin-bottom:15px}
+.card-header h2{margin:0;font-size:16px;color:var(--navy);border:none;padding:0}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.wide{grid-column:1/-1}
+label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--text)}.field{min-width:0}
+input{width:100%;padding:10px;border:1px solid #cfd3d8;border-radius:8px;font-size:14px;background:var(--white);transition:border-color 0.2s}
+input:focus{outline:none;border-color:var(--navy)}
+button{padding:10px 15px;border:0;border-radius:8px;background:var(--navy);color:var(--white);font-weight:700;cursor:pointer;margin-top:12px;transition:background 0.2s}
+button:hover{background:#1e40af}
+button.alt{background:#e5e7eb;color:var(--text)}button.alt:hover{background:#d1d5db}
+button.success{background:#10b981}button.success:hover{background:#059669}
+button.warning{background:#f59e0b}button.warning:hover{background:#d97706}
+button.danger{background:#ef4444;color:white;padding:8px 12px;margin-top:0}
+button.danger:hover{background:#dc2626}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:right;vertical-align:middle}
+th{background:var(--bg);color:var(--text);font-weight:700}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+td input{padding:8px}
+.small{width:80px; text-align:center}
+.results{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.metric{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);border-radius:12px;padding:15px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.lab{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px}.val{font-size:22px;font-weight:800;margin-top:6px;color:var(--text)}
+.status{padding:15px;border-radius:12px;background:var(--bg);font-weight:700;margin-top:15px; font-size:14px; display:flex; align-items:center; gap:10px}
+.status.ok{background:var(--emerald);color:var(--white)}.status.warn{background:#fef2f2;color:#991b1b;border:1px solid #f87171}
+.bottleneck{color:#b91c1c}
+.note{font-size:12px;color:var(--gray);margin-top:10px}
+/* Stopwatch specific style */
+.sw-container{text-align:center;padding:10px}
+.sw-display{font-size:42px;font-weight:800;color:var(--navy);font-family:monospace;margin:10px 0}
+.sw-controls{display:flex;justify-content:center;gap:10px;margin-bottom:15px}
+.sw-controls button{margin-top:0;padding:8px 16px;font-size:13px}
+.laps-container{max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:10px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.results{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.grid{grid-template-columns:1fr}.results{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Assembly Line Capacity Calculator</h1>
+<div class="sub">Multi-process assembly line • Standardized Operation Parameter & Time Study</div>
+
+<!-- STOPWATCH CARD -->
+<div class="card">
+<div class="card-header">
+  <h2>⏱️ Time Study Stopwatch</h2>
+</div>
+<div class="sw-container">
+  <div class="sw-display" id="swTime">00:00.00</div>
+  <div class="sw-controls">
+    <button id="startStopBtn" class="success" onclick="swStartStop()">Start</button>
+    <button id="lapBtn" class="warning" onclick="swLap()" disabled>Lap</button>
+    <button class="alt" onclick="swReset()">Reset</button>
+  </div>
+  <div class="laps-container">
+    <table>
+      <thead><tr><th>Lap Ke-</th><th>Waktu Lap</th><th>Total Waktu</th></tr></thead>
+      <tbody id="lapTableBody">
+        <tr><td colspan="3" style="text-align:center;color:var(--gray)">Belum ada catatan waktu.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header">
+  <h2>1. Setup Target Operasional</h2>
+  <button onclick="clearTarget()" class="danger" style="margin:0;">Kosongkan Target</button>
+</div>
+<div class="grid">
+<div class="field"><label>Produk</label><input id="product" value=""></div>
+<div class="field"><label>Target Produk (pcs)</label><input id="target" type="number" value="" min="0"></div>
+<div class="field"><label>Jam Kerja</label><input id="hours" type="number" value="" min="0.1" step=".1"></div>
+<div class="field"><label>Efisiensi (%)</label><input id="eff" type="number" value="" min="1" max="100"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header">
+  <h2>2. Alokasi Manpower Line</h2>
+  <button onclick="clearAllData()" class="danger" style="margin:0;">Kosongkan Tabel</button>
+</div>
+<table>
+<thead><tr>
+<th>No</th><th>Proses</th><th>CT Batch (dtk)</th><th>Qty/Batch</th><th>CT/pcs (dtk)</th><th>Operator</th><th>Output Efektif/OP</th><th>Kapasitas Tim</th><th>Aksi</th>
+</tr></thead>
+<tbody id="items"></tbody>
+</table>
+<button onclick="addItem()">+ Tambah Proses</button>
+<div class="note">*Ubah CT Batch dan Qty/Batch untuk melihat waktu per proses aktual. Nilai akan dihitung ulang secara otomatis.</div>
+</div>
+
+<div class="card">
+<div class="card-header">
+  <h2>3. Evaluasi Kapasitas</h2>
+</div>
+<div class="results">
+<div class="metric"><div class="lab">Total Operator</div><div class="val" id="totalOps">-</div></div>
+<div class="metric"><div class="lab">Kapasitas Line</div><div class="val" id="lineCap">-</div></div>
+<div class="metric"><div class="lab">Target / Jam</div><div class="val" id="targetHour">-</div></div>
+<div class="metric"><div class="lab">Gap Target</div><div class="val" id="gap">-</div></div>
+<div class="metric" style="border-left-color: #b91c1c;"><div class="lab">Titik Bottleneck</div><div class="val bottleneck" id="bottle">-</div></div>
+</div>
+<div class="status" id="status">-</div>
+</div>
+
+<div class="card">
+<div class="card-header">
+  <h2>Simulasi Optimalisasi Manpower</h2>
+</div>
+<table>
+<thead><tr><th>Proses</th><th>Operator Saat Ini</th><th>Operator Minimum Ideal</th><th>Kapasitas Saat Ini</th><th>Kapasitas +1 OP</th></tr></thead>
+<tbody id="sim"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+// --- STOPWATCH SCRIPT ---
+let swStartTime = 0, swElapsedTime = 0, swTimerInterval = null, swRunning = false;
+let lapList = [];
+
+function formatTime(ms) {
+  let minutes = Math.floor(ms / 60000);
+  let seconds = Math.floor((ms % 60000) / 1000);
+  let centiseconds = Math.floor((ms % 1000) / 10);
+  return (
+    (minutes < 10 ? "0" : "") + minutes + ":" +
+    (seconds < 10 ? "0" : "") + seconds + "." +
+    (centiseconds < 10 ? "0" : "") + centiseconds
+  );
+}
+
+function swUpdateDisplay() {
+  let currentTime = Date.now();
+  swElapsedTime = currentTime - swStartTime;
+  document.getElementById("swTime").textContent = formatTime(swElapsedTime);
+}
+
+function swStartStop() {
+  const btn = document.getElementById("startStopBtn");
+  const lapBtn = document.getElementById("lapBtn");
+  if (!swRunning) {
+    swStartTime = Date.now() - swElapsedTime;
+    swTimerInterval = setInterval(swUpdateDisplay, 30);
+    btn.textContent = "Pause";
+    btn.className = "warning";
+    lapBtn.disabled = false;
+    swRunning = true;
+  } else {
+    clearInterval(swTimerInterval);
+    btn.textContent = "Start";
+    btn.className = "success";
+    swRunning = false;
+  }
+}
+
+function swLap() {
+  if (!swRunning) return;
+  let currentLapTime = swElapsedTime;
+  let prevTotal = lapList.length > 0 ? lapList[lapList.length - 1].total : 0;
+  let diff = currentLapTime - prevTotal;
+  lapList.push({ lapTime: diff, total: currentLapTime });
+  
+  let tbody = document.getElementById("lapTableBody");
+  tbody.innerHTML = "";
+  lapList.forEach((item, index) => {
+    let tr = document.createElement("tr");
+    tr.innerHTML = `<td>Lap ${index + 1}</td><td>${formatTime(item.lapTime)}</td><td>${formatTime(item.total)}</td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.parentElement.parentElement.scrollTop = tbody.parentElement.parentElement.scrollHeight;
+}
+
+function swReset() {
+  clearInterval(swTimerInterval);
+  swRunning = false;
+  swElapsedTime = 0;
+  lapList = [];
+  document.getElementById("swTime").textContent = "00:00.00";
+  const btn = document.getElementById("startStopBtn");
+  btn.textContent = "Start";
+  btn.className = "success";
+  document.getElementById("lapBtn").disabled = true;
+  document.getElementById("lapTableBody").innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--gray)">Belum ada catatan waktu.</td></tr>`;
+}
+
+// --- CALCULATOR SCRIPT ---
+let data=[
+ {process:"",ct:0,qty:1,ops:0}
+];
+
+const $=id=>document.getElementById(id);
+const num=v=>parseFloat(v)||0;
+const fmt=x=>new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(Math.round(x));
+const fmt2=x=>new Intl.NumberFormat('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2}).format(x);
+
+function render(){
+ let t=$('items'); t.innerHTML='';
+ data.forEach((d,i)=>{
+  let tr=document.createElement('tr');
+  tr.innerHTML=`
+  <td>${i+1}</td>
+  <td><input value="${d.process}" oninput="data[${i}].process=this.value;calc()"></td>
+  <td><input type="number" min="0" step=".01" value="${d.ct || ''}" oninput="data[${i}].ct=num(this.value);calc()"></td>
+  <td><input type="number" min="1" value="${d.qty || ''}" oninput="data[${i}].qty=num(this.value);calc()"></td>
+  <td id="ctpc${i}">-</td>
+  <td><input class="small" type="number" min="0" value="${d.ops || ''}" oninput="data[${i}].ops=num(this.value);calc()"></td>
+  <td id="opcap${i}">-</td>
+  <td id="teamcap${i}">-</td>
+  <td><button class="danger" onclick="removeItem(${i})">X</button></td>`;
+  t.appendChild(tr);
+ });
+ calc();
+}
+
+function addItem(){
+ data.push({process:"",ct:0,qty:1,ops:0});
+ render();
+}
+
+function removeItem(i){
+ if(data.length>1){
+  data.splice(i,1);
+  render();
+ }
+}
+
+function clearTarget(){
+ if(confirm("Apakah Anda yakin ingin mengosongkan data Target Operasional?")){
+  $('product').value = '';
+  $('target').value = '';
+  $('hours').value = '';
+  $('eff').value = '';
+  calc();
+ }
+}
+
+function clearAllData(){
+ if(confirm("Apakah Anda yakin ingin mengosongkan seluruh data tabel? Data yang dihapus tidak dapat dikembalikan.")){
+  data = [{process:"",ct:0,qty:1,ops:0}];
+  render();
+ }
+}
+
+function calc(){
+ const hours=num($('hours').value), eff=num($('eff').value)/100, target=num($('target').value);
+ let totalOps=0, caps=[];
+ data.forEach((d,i)=>{
+  totalOps+=d.ops;
+  const ctpcs=d.qty>0 ? d.ct/d.qty : 0;
+  const theory=d.ct>0 && d.qty>0 ? (hours*3600/d.ct)*d.qty : 0;
+  const effective=theory*eff;
+  const team=effective*d.ops;
+  caps.push(team);
+  if($('ctpc'+i)) $('ctpc'+i).textContent=d.ct > 0 ? fmt2(ctpcs) : '-';
+  if($('opcap'+i)) $('opcap'+i).textContent=effective > 0 ? fmt(effective) : '-';
+  if($('teamcap'+i)) $('teamcap'+i).textContent=team > 0 ? fmt(team) : '-';
+ });
+ 
+ const validCaps = caps.filter(c => c > 0);
+ const lineCap = validCaps.length > 0 ? Math.min(...validCaps) : 0;
+ const bottleneckIndex = caps.indexOf(lineCap);
+ const targetHour=hours?target/hours:0;
+ const gap=lineCap-target;
+ 
+ $('totalOps').textContent=totalOps > 0 ? fmt(totalOps)+' OP' : '-';
+ $('lineCap').textContent=lineCap > 0 ? fmt(lineCap)+' pcs' : '-';
+ $('targetHour').textContent=targetHour > 0 ? fmt(targetHour)+' pcs/jam' : '-';
+ $('gap').textContent=target > 0 ? (gap>=0?'+':'' )+fmt(gap) : '-';
+ $('bottle').textContent=(bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-';
+ 
+ const statusEl = $('status');
+ if(target > 0 && hours > 0){
+   if(lineCap>=target){
+    statusEl.className = 'status ok';
+    statusEl.textContent = '✓ Kapasitas line MENCUKUPI untuk target hari ini. Alokasi manpower aman.';
+   } else {
+    statusEl.className = 'status warn';
+    statusEl.textContent = '⚠ Kapasitas KURANG! Fokus penambahan operator pada proses Bottleneck: '+((bottleneckIndex !== -1 && data[bottleneckIndex]?.process) ? data[bottleneckIndex].process : '-')+'.';
+   }
+ } else {
+  statusEl.className = 'status';
+  statusEl.textContent = 'Masukkan parameter target operasional dan data proses untuk melihat status evaluasi.';
+ }
+
+ let s='';
+ data.forEach((d)=>{
+   const ctpcs=d.qty>0 ? d.ct/d.qty : 0, theory=d.ct>0?(hours*3600/d.ct)*d.qty:0, effcap=theory*eff;
+   const minOps=effcap>0 && target>0 ? Math.ceil(target/effcap) : 0;
+   s+=`<tr><td>${d.process || '-'}</td><td>${fmt(d.ops)}</td><td>${target > 0 ? fmt(minOps) : '-'}</td><td>${effcap > 0 ? fmt(effcap*d.ops) : '-'}</td><td>${effcap > 0 ? fmt(effcap*(d.ops+1)) : '-'}</td></tr>`;
+ });
+ $('sim').innerHTML=s;
+}
+document.querySelectorAll('.grid input').forEach(x=>x.addEventListener('input',calc));
+render();
+</script>
+</body>
+</html>
